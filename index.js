@@ -28,6 +28,7 @@ rp(options)
       });
     }
     process.stdout.write('loading...');
+    // run the getchallenges function after this
     getChallengesCompletedAndPushToUserArray(userData);
   })
   .catch(err => console.log(err));
@@ -35,21 +36,27 @@ rp(options)
 function getChallengesCompletedAndPushToUserArray(userData) {
   let i = 0;
   function next() {
+    // run this block until we go over all the users
     if (i < userData.length) {
       var options = {
         url: `https://www.freecodecamp.org/${userData[i].name}`,
+        // pass the body to cheerio
         transform: body => cheerio.load(body)
       };
       rp(options).then(function($) {
         process.stdout.write(`.`);
+        // checking if the user exists
         const fccAccount = $('h1.landing-heading').length == 0;
+        // calculating number of challenges completed by counting the number of rows
         const challengesPassed = fccAccount ? $('tbody tr').length : 'unknown';
+        // push the name, likes and challengesdata to the table.
         table.push([
           userData[i].name,
           userData[i].likes_received,
           challengesPassed
         ]);
         ++i;
+        // call next again until the condition is true
         return next();
       });
     } else {
